@@ -21,12 +21,17 @@ flutter:
         pluginClass: LocationPlugin
       web:
         default_package: location_web
+      ohos:
+        package: com.lyokone.location
+        pluginClass: LocationPlugin
 
 dependencies:
   flutter:
     sdk: flutter
-  location_platform_interface: ^3.1.1
-  location_web: ^4.1.1
+  location_platform_interface: 
+    path: ../location_platform_interface
+  location_web: 
+    path: ../location_web
 dev_dependencies:
   async: ^2.5.0
   build_runner: ^2.3.3
