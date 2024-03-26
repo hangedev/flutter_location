@@ -5,7 +5,7 @@ import 'dart:ui';
 import 'package:location_platform_interface/location_platform_interface.dart';
 
 export 'package:location_platform_interface/location_platform_interface.dart'
-    show LocationAccuracy, LocationData, PermissionStatus;
+    show LocationAccuracy, LocationScenario, LocationData, PermissionStatus;
 
 /// The main access point to the `location` plugin.
 class Location implements LocationPlatform {
@@ -24,18 +24,21 @@ class Location implements LocationPlatform {
   /// The [accuracy] argument is controlling the precision of the
   /// [LocationData]. The [interval] and [distanceFilter] are controlling how
   /// often a new location is sent through [onLocationChanged].
-  ///
-  /// [interval] and [distanceFilter] are not used on web.
+  /// [distanceInterval] and  [LocationScenario] are only used on ohos.
   @override
   Future<bool> changeSettings({
     LocationAccuracy? accuracy = LocationAccuracy.high,
+    LocationScenario? scenario = LocationScenario.unset,
     int? interval = 1000,
     double? distanceFilter = 0,
+    double? distanceInterval = 0,
   }) {
     return LocationPlatform.instance.changeSettings(
       accuracy: accuracy,
+      scenario: scenario,
       interval: interval,
       distanceFilter: distanceFilter,
+      distanceInterval: distanceInterval,
     );
   }
 
