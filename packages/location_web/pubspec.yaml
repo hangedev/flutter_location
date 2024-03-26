@@ -17,9 +17,7 @@ dependencies:
   http_parser: ^4.0.0
   js: ^0.6.3
   location_platform_interface: 
-    git:
-      url: "https://gitee.com/openharmony-sig/flutter_location.git"
-      path: "packages/location_platform_interface"
+    path: ../location_platform_interface
 
 dev_dependencies:
   flutter_test:
