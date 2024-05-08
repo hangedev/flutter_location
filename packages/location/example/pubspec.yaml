@@ -11,9 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   location:
-    git:
-      url: "https://gitee.com/openharmony-sig/flutter_location.git"
-      path: "packages/location"
+    path: ../
   url_launcher: ^6.0.2
 
 dev_dependencies:
