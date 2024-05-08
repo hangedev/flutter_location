@@ -14,15 +14,14 @@
 */
 
 {
-  "name": "apptemplate",
+  "name": "location",
   "version": "1.0.0",
   "description": "Please describe the basic information.",
-  "main": "",
+  "main": "Index.ets",
   "author": "",
   "license": "",
   "dependencies": {
+    "@ohos/flutter_ohos": "file:har/flutter.har",
   },
-  "devDependencies": {
-    "@ohos/hypium": "1.0.6"
-  }
 }
+
