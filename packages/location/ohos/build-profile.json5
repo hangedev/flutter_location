@@ -14,22 +14,16 @@
 */
 
 {
-  "app": {
-    "signingConfigs": [],
-    "products": [
-      {
-        "name": "default",
-        "signingConfig": "default",
-        "compileSdkVersion": "4.1.0(11)",
-        "compatibleSdkVersion": "4.1.0(11)",
-        "runtimeOS": "HarmonyOS",
-      }
-    ]
+  "apiType": 'stageMode',
+  "buildOption": {
   },
-  "modules": [
+  "targets": [
     {
-      "name": "location",
-      "srcPath": "./location"
+      "name": "default",
+      "runtimeOS": "HarmonyOS"
+    },
+    {
+      "name": "ohosTest",
     }
   ]
 }

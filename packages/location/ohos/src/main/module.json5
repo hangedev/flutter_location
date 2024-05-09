@@ -19,10 +19,8 @@
     "type": "har",
     "deviceTypes": [
       "default",
-      "tablet"
-    ],
-    "requestPermissions": [
-      {"name" :  "ohos.permission.INTERNET"},
+      "tablet",
+      "2in1"
     ]
   }
 }
