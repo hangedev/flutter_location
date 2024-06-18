@@ -52,9 +52,6 @@ export default class StreamHandlerImpl implements StreamHandler {
     this.location.events = events;
     if (!this.location.checkPermissions()) {
       this.location.requestPermissions();
-    } else if (!this.location.checkAccuracyPermissions()) {
-      events.error("PERMISSION_DENIED", "Location permission denied", null);
-      this.location.events = null;
     } else {
       this.location.startRequestingLocation();
     }
