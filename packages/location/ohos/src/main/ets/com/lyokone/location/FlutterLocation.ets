@@ -69,18 +69,6 @@ export class FlutterLocation {
       this.tokenId = bundleInfo.appInfo.accessTokenId;
     }
     let locationPermissionState = this.atManager.verifyAccessTokenSync(this.tokenId,
-      "ohos.permission.APPROXIMATELY_LOCATION");
-    return locationPermissionState == abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED;
-  }
-
-  checkAccuracyPermissions(): boolean {
-    Log.i(TAG, "checkAccuracyPermissions");
-    if (!this.tokenId) {
-      let bundleInfo = bundleManager
-        .getBundleInfoForSelfSync(bundleManager.BundleFlag.GET_BUNDLE_INFO_WITH_APPLICATION);
-      this.tokenId = bundleInfo.appInfo.accessTokenId;
-    }
-    let locationPermissionState = this.atManager.verifyAccessTokenSync(this.tokenId,
       "ohos.permission.LOCATION");
     return locationPermissionState == abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED;
   }
@@ -99,14 +87,14 @@ export class FlutterLocation {
       "ohos.permission.LOCATION"
     ]
     this.atManager.requestPermissionsFromUser(this.ability.context, array).then((data) => {
-      if (data.authResults[0] == abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED) {
+      if (data.authResults[1] == abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED) {
         if (this.getLocationResult != null || this.events != null) {
           this.startRequestingLocation();
         } else {
           this.result?.success(1);
           this.result = null;
         }
-      } else if (data.authResults[0] == abilityAccessCtrl.GrantStatus.PERMISSION_DENIED) {
+      } else if (data.authResults[1] == abilityAccessCtrl.GrantStatus.PERMISSION_DENIED) {
         this.sendError("PERMISSION_DENIED_NEVER_ASK", "Location permission denied forever - please open app settings", null);
         this.result?.success(2);
         this.result = null;

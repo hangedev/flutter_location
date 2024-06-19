@@ -105,9 +105,6 @@ export default class MethodCallHandlerImpl implements MethodCallHandler {
       this.location.getLocationResult = result;
       if (!this.location.checkPermissions()) {
         this.location.requestPermissions();
-      } else if (!this.location.checkAccuracyPermissions()) {
-        result.error("PERMISSION_DENIED", "Location permission denied", null);
-        this.location.getLocationResult = null;
       } else {
         this.location.startRequestingLocation();
       }
