@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
 
@@ -49,6 +50,7 @@ class _ServiceEnabledState extends State<ServiceEnabledWidget> {
                 child: const Text('Check'),
               ),
             ),
+            if(Platform.operatingSystem !='ohos')
             ElevatedButton(
               onPressed: (_serviceEnabled ?? false) ? null : _requestService,
               child: const Text('Request'),
