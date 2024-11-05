@@ -1,20 +1,21 @@
+/*
+ * Copyright (C) 2024 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 {
   "app": {
-    "signingConfigs": [
-      {
-        "name": "default",
-        "type": "HarmonyOS",
-        "material": {
-          "certpath": "C:\\Users\\Administrator\\.ohos\\config\\default_ohos_RZM_Ar2j9sZiDo1qLcEFCNvQDH2coqQl5yhuTjoS-00=.cer",
-          "storePassword": "0000001B892F930A65464D4392927C925F976F2CADF0E17325018BCDD5017845C382E075ADFBB3BDA7312A",
-          "keyAlias": "debugKey",
-          "keyPassword": "0000001B32AF316A88F8F2FE1B7682A4BD92954B472BC53166BC81965047094C6A49AB2407180FE9521AE1",
-          "profile": "C:\\Users\\Administrator\\.ohos\\config\\default_ohos_RZM_Ar2j9sZiDo1qLcEFCNvQDH2coqQl5yhuTjoS-00=.p7b",
-          "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\Administrator\\.ohos\\config\\default_ohos_RZM_Ar2j9sZiDo1qLcEFCNvQDH2coqQl5yhuTjoS-00=.p12"
-        }
-      }
-    ],
+    "signingConfigs": [],
     "products": [
       {
         "name": "default",
