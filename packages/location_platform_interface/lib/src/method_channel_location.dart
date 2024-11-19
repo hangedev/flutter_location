@@ -36,18 +36,23 @@ class MethodChannelLocation extends LocationPlatform {
   /// The [accuracy] argument is controlling the precision of the
   /// [LocationData]. The [interval] and [distanceFilter] are controlling how
   /// often a new location is sent through [onLocationChanged].
+  /// [scenario] and  [distanceInterval] are only used on ohos.
   @override
   Future<bool> changeSettings({
     LocationAccuracy? accuracy = LocationAccuracy.high,
+    LocationScenario? scenario = LocationScenario.unset,
     int? interval = 1000,
     double? distanceFilter = 0,
+    double? distanceInterval = 0,
   }) async {
     final result = await _methodChannel!.invokeMethod(
       'changeSettings',
       <String, dynamic>{
         'accuracy': accuracy!.index,
+        'scenario': scenario!.index,
         'interval': interval,
         'distanceFilter': distanceFilter,
+        'distanceInterval': distanceInterval,
       },
     );
 

@@ -150,15 +150,18 @@ class LocationData {
 /// https://developer.apple.com/documentation/corelocation/cllocationaccuracy?language=objc
 enum LocationAccuracy {
   /// To request best accuracy possible with zero additional power consumption
+  /// On Ohos, this is equivalent to FIRST_FIX.
   powerSave,
 
   /// To request "city" level accuracy
+  /// On Ohos, this is equivalent to LOW_POWER.
   low,
 
   /// To request "block" level accuracy
   balanced,
 
   /// To request the most accurate locations available
+  /// On Ohos, this is equivalent to ACCURACY.
   high,
 
   /// To request location for navigation usage (affect only iOS)
@@ -169,6 +172,29 @@ enum LocationAccuracy {
   ///
   /// On iOS < 14.0 and Android, this is equivalent to LocationAccuracy.low.
   reduced,
+
+  /// On Ohos, this is equivalent to UNSET. (affect only Ohos)
+  unset
+}
+
+enum LocationScenario  {
+  /// To request location for default scene (affect only Ohos)
+  unset,
+
+  /// To request location for NAVIGATION scene (affect only Ohos)
+  navigation,
+
+  /// To request location for TRAJECTORY_TRACKING scene (affect only Ohos)
+  trajectoryTracking,
+
+  /// To request location for CAR_HAILING scene (affect only Ohos)
+  carHailing,
+
+  /// To request location for DAILY_LIFE_SERVICE scene (affect only Ohos)
+  dailyLifeService,
+
+  /// To request location for NO_POWER scene (affect only Ohos)
+  noPower,
 }
 
 /// Status of a permission request to use location services.
