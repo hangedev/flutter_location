@@ -1,0 +1,11 @@
+[
+    {
+        "Name": "flutterlocation",
+        "License": "MIT license",
+        "License File": "LICENSE",
+        "Version Number": "9b5fcd34b72e95692df12f43d965a179b4e79ff9",
+        "Owner": "george.lihui@huawei.com",
+        "Upstream URL": "https://github.com/Lyokone/flutterlocation",
+        "Description": "Cross-platform plugin for easy access to device's location in real-time."
+    }
+]
