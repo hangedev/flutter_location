@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:location/location.dart';
 
@@ -218,7 +219,7 @@ class _ChangeSettingsState extends State<ChangeSettings> {
       key: _formKey,
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: Platform.isOhos ? widgetsOhos() : widgetsOhos()
+          children: defaultTargetPlatform == TargetPlatform.ohos ? widgetsOhos() : widgetsOhos()
       )
     );
   }
