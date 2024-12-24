@@ -92,6 +92,7 @@
                 <filteritem type="filepath" name="packages/location/src/*" desc="开源库代码（或原库代码文件），原本就无协议头，不做侵入式修改"/>
                 <filteritem type="filepath" name="packages/location/test/*" desc="开源库代码（或原库代码文件），原本就无协议头，不做侵入式修改"/>
                 <filteritem type="filename" name="packages/location/melos.yaml" desc="开源库代码（或原库代码文件），原本就无协议头，不做侵入式修改"/>
+                <filteritem type="filename" name="*.mdx" desc="开源库代码（或原库代码文件），原本就无协议头，不做侵入式修改"/>
                 <filteritem type="filename" name=".metadata" desc="开源库代码（或原库代码文件），原本就无协议头，不做侵入式修改"/>
                 <filteritem type="filename" name="analysis_options.yaml" desc="开源库代码（或原库代码文件），原本就无协议头，不做侵入式修改"/>
                 <filteritem type="filename" name="pubspec.yaml" desc="开源库代码（或原库代码文件），原本就无协议头，不需要添加版权头"/>
