@@ -20,3 +20,8 @@ The full README for the plugin can be found in the [location] directory, or on
 [location_platform_interface]: https://github.com/Lyokone/flutterlocation/tree/master/packages/location_platform_interface
 [location_web]: https://github.com/Lyokone/flutterlocation/tree/master/packages/location_web
 [documentation website]: https://docs.page/Lyokone/flutterlocation
+
+## OpenHarmony
+
+- [中文](./README_OpenHarmony_CN.md)
+- [EN](./README_OpenHarmony.md)
