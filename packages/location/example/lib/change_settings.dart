@@ -105,6 +105,27 @@ class _ChangeSettingsState extends State<ChangeSettings> {
         style: Theme.of(context).textTheme.bodyLarge,
       ),
       const SizedBox(height: 4),
+       Text(
+        'Interval: ${_intervalController.text}',
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+      Text(
+        'DistanceFilter: ${_distanceFilterController.text}',
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+      Text(
+        'DistanceInterval: ${_distanceIntervalController.text}',
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+      Text(
+        'Priority: $_locationAccuracy',
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+      Text(
+        'Scenario: $_locationScenario',
+        style: Theme.of(context).textTheme.bodyMedium,
+      ),
+      const SizedBox(height: 4),
       TextFormField(
         keyboardType: TextInputType.number,
         controller: _intervalController,
@@ -218,7 +239,7 @@ class _ChangeSettingsState extends State<ChangeSettings> {
       key: _formKey,
       child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: Platform.operatingSystem =='ohos' ? widgetsOhos() : widgetsOhos()
+          children: Platform.operatingSystem =='ohos'  ? widgetsOhos() : widgetsOthers()
       )
     );
   }

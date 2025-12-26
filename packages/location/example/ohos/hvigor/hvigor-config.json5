@@ -14,10 +14,7 @@
  */
 
 {
-  "modelVersion": "5.0.0",
+  "modelVersion": "6.0.1",
   "dependencies": {
-  },
-  "properties": {
-    "ohos.nativeResolver": false,
   }
 }
