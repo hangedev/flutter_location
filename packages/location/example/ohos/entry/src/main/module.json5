@@ -41,12 +41,33 @@
       },
       {
         "name": "ohos.permission.LOCATION",
+        "reason": "$string:EntryAbility_label",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
       },
       {
         "name": "ohos.permission.APPROXIMATELY_LOCATION",
+        "reason": "$string:EntryAbility_label",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
       },
       {
         "name": "ohos.permission.LOCATION_IN_BACKGROUND",
+        "reason": "$string:EntryAbility_label",
+        "usedScene": {
+          "abilities": [
+            "EntryAbility"
+          ],
+          "when": "inuse"
+        }
       },
       {
         "name": "ohos.permission.KEEP_BACKGROUND_RUNNING",
