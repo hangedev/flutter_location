@@ -160,6 +160,7 @@ export class FlutterLocation {
       this.mLocationCallback(location);
     }).catch((err: BusinessError) => {
       Log.e(TAG, "getCurrentLocation err: " + JSON.stringify(err));
+      this.sendError(String(err.code), "Failed to get location: " + err.message, null);
     })
     if (!this.checkPermissions()) {
       return;
