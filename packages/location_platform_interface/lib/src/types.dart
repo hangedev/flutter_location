@@ -25,7 +25,7 @@ class LocationData {
     return LocationData._(
       dataMap['latitude'] as double?,
       dataMap['longitude'] as double?,
-      dataMap['accuracy'] as double?,
+      (dataMap['accuracy'] as num?)?.toDouble(),
       dataMap['altitude'] as double?,
       dataMap['speed'] as double?,
       dataMap['speed_accuracy'] as double?,
