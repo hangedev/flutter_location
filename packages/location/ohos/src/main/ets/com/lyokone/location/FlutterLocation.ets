@@ -147,12 +147,17 @@ export class FlutterLocation {
 
   startRequestingLocation() {
     Log.i(TAG, "startRequestingLocation");
-    geoLocationManager.getCurrentLocation(this.requestInfo).then((location) => {
-      this.mLocationCallback(location);
-    }).catch((err: BusinessError) => {
+    try {
+      geoLocationManager.getCurrentLocation(this.requestInfo).then((location) => {
+        this.mLocationCallback(location);
+      }).catch((err: BusinessError) => {
+        Log.e(TAG, "getCurrentLocation err: " + JSON.stringify(err));
+        this.sendError(String(err.code), "Failed to get location: " + err.message, null);
+      })
+    } catch (err) {
       Log.e(TAG, "getCurrentLocation err: " + JSON.stringify(err));
       this.sendError(String(err.code), "Failed to get location: " + err.message, null);
-    })
+    }
     if (!this.checkPermissions()) {
       return;
     }
