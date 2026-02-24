@@ -87,7 +87,7 @@ export class FlutterLocation {
       "ohos.permission.LOCATION"
     ]
     this.atManager.requestPermissionsFromUser(this.ability.context, array).then((data) => {
-      if (data.authResults[1] == abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED) {
+      if (data.authResults[0] == abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED || data.authResults[1] == abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED) {
         if (this.getLocationResult != null || this.events != null) {
           this.startRequestingLocation();
         } else {
