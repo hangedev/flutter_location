@@ -21,6 +21,7 @@
   "author": "",
   "license": "",
   "dependencies": {
-    "location": "file:../har/location.har"
+    "location": "file:../har/location.har",
+    "@ohos/flutter_ohos": "har/flutter.har"
   }
 }
