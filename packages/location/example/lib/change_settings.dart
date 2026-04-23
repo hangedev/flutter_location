@@ -25,6 +25,13 @@ class _ChangeSettingsState extends State<ChangeSettings> {
   LocationAccuracy _locationAccuracy = LocationAccuracy.high;
   LocationScenario _locationScenario = LocationScenario.unset;
 
+  // Display values that update only when Change button is pressed
+  String _displayInterval = '5000';
+  String _displayDistanceFilter = '0';
+  String _displayDistanceInterval = '0';
+  LocationAccuracy _displayAccuracy = LocationAccuracy.high;
+  LocationScenario _displayScenario = LocationScenario.unset;
+
   @override
   void dispose() {
     _intervalController.dispose();
@@ -106,23 +113,23 @@ class _ChangeSettingsState extends State<ChangeSettings> {
       ),
       const SizedBox(height: 4),
        Text(
-        'Interval: ${_intervalController.text}',
+        'Interval: $_displayInterval',
         style: Theme.of(context).textTheme.bodyMedium,
       ),
       Text(
-        'DistanceFilter: ${_distanceFilterController.text}',
+        'DistanceFilter: $_displayDistanceFilter',
         style: Theme.of(context).textTheme.bodyMedium,
       ),
       Text(
-        'DistanceInterval: ${_distanceIntervalController.text}',
+        'DistanceInterval: $_displayDistanceInterval',
         style: Theme.of(context).textTheme.bodyMedium,
       ),
       Text(
-        'Priority: $_locationAccuracy',
+        'Priority: $_displayAccuracy',
         style: Theme.of(context).textTheme.bodyMedium,
       ),
       Text(
-        'Scenario: $_locationScenario',
+        'Scenario: $_displayScenario',
         style: Theme.of(context).textTheme.bodyMedium,
       ),
       const SizedBox(height: 4),
@@ -158,6 +165,7 @@ class _ChangeSettingsState extends State<ChangeSettings> {
           }
           setState(() {
             _locationAccuracy = value;
+            _displayAccuracy = value;
           });
         },
         items: const <DropdownMenuItem<LocationAccuracy>>[
@@ -188,6 +196,7 @@ class _ChangeSettingsState extends State<ChangeSettings> {
           }
           setState(() {
             _locationScenario = value;
+            _displayScenario = value;
           });
         },
         items: const <DropdownMenuItem<LocationScenario>>[
@@ -227,6 +236,13 @@ class _ChangeSettingsState extends State<ChangeSettings> {
             distanceFilter: double.parse(_distanceFilterController.text),
             distanceInterval: double.parse(_distanceIntervalController.text),
           );
+          setState(() {
+            _displayInterval = _intervalController.text;
+            _displayDistanceFilter = _distanceFilterController.text;
+            _displayDistanceInterval = _distanceIntervalController.text;
+            _displayAccuracy = _locationAccuracy;
+            _displayScenario = _locationScenario;
+          });
         },
         child: const Text('Change'),
       ),
