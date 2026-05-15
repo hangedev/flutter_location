@@ -70,7 +70,9 @@ export class FlutterLocation {
     }
     let locationPermissionState = this.atManager.verifyAccessTokenSync(this.tokenId,
       "ohos.permission.LOCATION");
-    return locationPermissionState == abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED;
+    let approximatelyPermissionState = this.atManager.verifyAccessTokenSync(this.tokenId,
+      "ohos.permission.APPROXIMATELY_LOCATION");
+    return locationPermissionState == abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED || approximatelyPermissionState == abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED;
   }
 
   requestPermissions(): void {
