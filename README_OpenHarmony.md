@@ -24,7 +24,7 @@ Go to the project directory and add the following dependencies in pubspec.yaml
 dependencies:
   location:
     git:
-      url: https://gitcode.com/openharmony-sig/flutter_location.git
+      url: https://gitcode.com/CPF-Flutter/flutter_location.git
       path: "./packages/location"
 ```
 
@@ -137,6 +137,6 @@ not
 
 ## 7. License
 
-This project is licensed under  [MIT License](https://gitcode.com/openharmony-sig/flutter_location/blob/master/LICENSE) .
+This project is licensed under  [MIT License](https://gitcode.com/CPF-Flutter/flutter_location/blob/master/LICENSE) .
 
 > Template version: v0.0.1
