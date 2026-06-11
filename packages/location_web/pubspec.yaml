@@ -18,7 +18,7 @@ dependencies:
   js: ^0.6.3
   location_platform_interface: 
     git:
-      url: "https://gitee.com/openharmony-sig/flutter_location.git"
+      url: "https://gitcode.com/CPF-Flutter/flutter_location.git"
       path: "packages/location_platform_interface"
 
 dev_dependencies:
