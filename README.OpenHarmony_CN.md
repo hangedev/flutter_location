@@ -20,6 +20,8 @@ dependencies:
   location:
     git:
       url: https://gitcode.com/CPF-Flutter/flutter_location.git
+      # ref: 5.0.3-ohos-1.0.0-beta.1
+      ref: TAG  # 请根据下方TAG版本对应表选择TAG
       path: "./packages/location"
 ```
 
@@ -28,6 +30,15 @@ dependencies:
 ```bash
 flutter pub get
 ```
+
+> TAG 命名规则：原库版本-ohos-版本号-betax，不同 TAG 之间的变更详见 CHANGELOG.OpenHarmony.md。实际使用时请将依赖示例中的 TAG 替换为下表选择的 TAG。
+
+| Flutter 框架版本 | TAG 名称 | 分支名 |
+|---|---|---|
+| 3.7 | 5.0.3-ohos-1.0.0-beta.1 | master |
+| 3.27 | location-7.0.1-ohos.1.0.0-beta.1 | br_location-v7.0.1_ohos |
+| 3.27 | 8.0.1-ohos-1.0.0-beta.1 | br_flutter_location_v8.0.1_ohos |
+
 
 <!-- tabs:end -->
 

@@ -23,5 +23,5 @@ The full README for the plugin can be found in the [location] directory, or on
 
 ## OpenHarmony
 
-- [中文](./README_OpenHarmony_CN.md)
-- [EN](./README_OpenHarmony.md)
+- [中文](./README.OpenHarmony_CN.md)
+- [EN](./README.OpenHarmony.md)
