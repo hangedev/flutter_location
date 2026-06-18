@@ -19,7 +19,7 @@
 dependencies:
   location:
     git:
-      url: https://gitcode.com/openharmony-sig/flutter_location.git
+      url: https://gitcode.com/CPF-Flutter/flutter_location.git
       path: "./packages/location"
 ```
 
@@ -130,7 +130,7 @@ flutter pub get
 
 ## 7. 开源协议
 
-本项目基于 [MIT开源协议](https://gitcode.com/openharmony-sig/fluttertpc_flutter_vibrate/blob/master/LICENSE) ，请自由地享受和参与开源。
+本项目基于 [MIT开源协议](https://gitcode.com/CPF-Flutter/flutter_location/blob/master/LICENSE) ，请自由地享受和参与开源。
 
 
 

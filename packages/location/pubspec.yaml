@@ -28,14 +28,10 @@ flutter:
 dependencies:
   flutter:
     sdk: flutter
-  location_platform_interface: 
-    git:
-      url: "https://gitee.com/openharmony-sig/flutter_location.git"
-      path: "packages/location_platform_interface"
-  location_web: 
-    git:
-      url: "https://gitee.com/openharmony-sig/flutter_location.git"
-      path: "packages/location_web"
+  location_platform_interface:
+    path: ../location_platform_interface
+  location_web:
+    path: ../location_web
 dev_dependencies:
   async: ^2.5.0
   build_runner: ^2.3.3
