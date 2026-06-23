@@ -25,6 +25,8 @@ dependencies:
   location:
     git:
       url: https://gitcode.com/CPF-Flutter/flutter_location.git
+      # ref: 5.0.3-ohos-1.0.0-beta.1
+      ref: TAG  # Select a TAG from the TAG version mapping table below
       path: "./packages/location"
 ```
 
@@ -33,6 +35,15 @@ Execute Command
 ```bash
 flutter pub get
 ```
+
+> TAG naming rule: original-version-ohos-version-betax. See CHANGELOG.OpenHarmony.md for changes between TAG versions. Replace TAG in the dependency example with the TAG selected from the table.
+
+| Flutter framework version | TAG name | Branch |
+|---|---|---|
+| 3.7 | 5.0.3-ohos-1.0.0-beta.1 | master |
+| 3.27 | location-7.0.1-ohos.1.0.0-beta.1 | br_location-v7.0.1_ohos |
+| 3.27 | 8.0.1-ohos-1.0.0-beta.1 | br_flutter_location_v8.0.1_ohos |
+
 
 <!-- tabs:end -->
 
@@ -136,6 +147,6 @@ not
 
 ## 7. License
 
-This project is licensed under  [MIT License](https://gitcode.com/CPF-Flutter/flutter_location/blob/master/LICENSE) .
+This project is licensed under [MIT License](https://gitcode.com/CPF-Flutter/flutter_location/blob/master/LICENSE).
 
 > Template version: v0.0.1
