@@ -36,8 +36,9 @@ flutter pub get
 | Flutter 框架版本 | TAG 名称 | 分支名 |
 |---|---|---|
 | 3.7 | 5.0.3-ohos-1.0.0-beta.1 | master |
-| 3.27 | location-7.0.1-ohos.1.0.0-beta.1 | br_location-v7.0.1_ohos |
-| 3.27 | 8.0.1-ohos-1.0.0-beta.1 | br_flutter_location_v8.0.1_ohos |
+| 3.22 | 7.0.1-ohos.1.0.0-beta.2 | br_location-v7.0.1_ohos |
+| 3.27 | 7.0.1-ohos.1.0.0-beta.2 | br_location-v7.0.1_ohos |
+| 3.35 | 7.0.1-ohos.1.0.0-beta.2 | br_location-v7.0.1_ohos |
 
 
 <!-- tabs:end -->
