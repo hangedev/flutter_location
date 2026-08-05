@@ -74,6 +74,8 @@ export class FlutterLocation {
   private isDisposed: boolean = false;
   /** Whether the location change subscription is active */
   private isSubscribed: boolean = false;
+  /** Whether enableBackgroundMode should run after foreground permission is granted */
+  private pendingEnableBackgroundMode: boolean = false;
   /** Location request configuration */
   private requestInfo: geoLocationManager.LocationRequest = {
     'priority': geoLocationManager.LocationRequestPriority.FIRST_FIX,
@@ -99,16 +101,7 @@ export class FlutterLocation {
       return;
     }
     try {
-    let loc: Record<string, Object> = {};
-    loc['latitude'] = location.latitude;
-    loc['longitude'] = location.longitude;
-    loc['accuracy'] = location.accuracy;
-    loc['altitude'] = location.altitude;
-    loc['speed'] = location.speed;
-    loc['heading'] = location.direction;
-    // Use Date.now() for epoch milliseconds to match Android/iOS behavior
-    // (OHOS geoLocationManager only provides timeSinceBoot, not epoch time)
-    loc['time'] = Date.now();
+    const loc = this.buildLocationMap(location);
     if (this.getLocationResult != null) {
       this.getLocationResult.success(loc);
       this.getLocationResult = null;
@@ -171,6 +164,13 @@ export class FlutterLocation {
    */
   setAbility(ability: UIAbility | null): void {
     this.ability = ability;
+  }
+
+  /**
+   * Mark that the pending permission request originates from enableBackgroundMode.
+   */
+  setPendingEnableBackgroundMode(pending: boolean): void {
+    this.pendingEnableBackgroundMode = pending;
   }
 
   /**
@@ -244,6 +244,16 @@ export class FlutterLocation {
     }
     if (this.checkPermissions()) {
       const status = this.checkPermissionStatus();
+      if (this.getLocationResult != null || this.events != null) {
+        this.startRequestingLocation();
+      }
+      if (this.pendingEnableBackgroundMode && this.result != null) {
+        const pendingResult = this.result;
+        this.pendingEnableBackgroundMode = false;
+        this.result = null;
+        this.enableBackgroundMode(pendingResult);
+        return;
+      }
       this.result?.success(status);
       this.result = null;
       return;
@@ -275,19 +285,25 @@ export class FlutterLocation {
         }
         return;
       }
-      if (data.authResults[1] == abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED) {
+      if (data.authResults[0] == abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED ||
+          data.authResults[1] == abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED) {
         if (this.getLocationResult != null || this.events != null) {
           this.startRequestingLocation();
         }
-        // Always send result.success(1) for granted, matching Android behavior
-        if (pendingResult != null) {
-          pendingResult.success(1);
+        if (this.pendingEnableBackgroundMode && pendingResult != null) {
+          this.pendingEnableBackgroundMode = false;
+          this.enableBackgroundMode(pendingResult);
+          return;
         }
-      } else if (data.authResults[0] == abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED &&
-                 data.authResults[1] != abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED) {
-        // Only approximate location granted - return grantedLimited(3)
-        pendingResult?.success(3);
+        if (data.authResults[1] == abilityAccessCtrl.GrantStatus.PERMISSION_GRANTED) {
+          // Precise location granted - return granted(1), matching Android behavior
+          pendingResult?.success(1);
+        } else {
+          // Only approximate location granted - return grantedLimited(3)
+          pendingResult?.success(3);
+        }
       } else if (data.authResults[1] == abilityAccessCtrl.GrantStatus.PERMISSION_DENIED) {
+        this.pendingEnableBackgroundMode = false;
         // OHOS cannot distinguish "denied" from "deniedForever" (no shouldShowRequestPermissionRationale API)
         // Default to "denied" (0) for consistency with other platforms
         // IMPORTANT: Must send result BEFORE sendError, because sendError clears getLocationResult/events
@@ -298,6 +314,7 @@ export class FlutterLocation {
         this.sendError('PERMISSION_DENIED',
           'Location permission denied', null);
       } else {
+        this.pendingEnableBackgroundMode = false;
         if (pendingResult != null) {
           pendingResult.success(0);
         }
@@ -445,7 +462,7 @@ export class FlutterLocation {
     try {
       const onResolved = this.onCurrentLocationResolved;
       const onRejected = this.onCurrentLocationRejected;
-      geoLocationManager.getCurrentLocation(this.requestInfo)
+      geoLocationManager.getCurrentLocation(this.buildCurrentLocationRequest())
         .then((location: geoLocationManager.Location) => {
           if (onResolved != null) {
             onResolved(location);
@@ -542,55 +559,66 @@ export class FlutterLocation {
       result.error('NO_ABILITY', 'Ability context is not available', null);
       return;
     }
-    if (this.checkBackgroundPermissions()) {
-      let wantAgentInfo: wantAgent.WantAgentInfo = {
-        wants: [
-          {
-            bundleName: this.ability.context.abilityInfo.bundleName,
-            abilityName: this.ability.context.abilityInfo.name
-          }
-        ],
-        operationType: wantAgent.OperationType.START_ABILITY,
-        requestCode: 0,
-        wantAgentFlags: [wantAgent.WantAgentFlags.UPDATE_PRESENT_FLAG]
-      };
-      wantAgent.getWantAgent(wantAgentInfo).then((wantAgentObj: WantAgent) => {
-        if (this.isDisposed) {
-          result.error('PLUGIN_DISPOSED', 'Plugin has been disposed', null);
-          return;
-        }
-        backgroundTaskManager.startBackgroundRunning(this.ability?.context,
-          backgroundTaskManager.BackgroundMode.LOCATION, wantAgentObj).then(() => {
-          if (this.isDisposed) {
-            // If disposed during async operation, immediately stop the background task
-            try {
-              backgroundTaskManager.stopBackgroundRunning(this.ability?.context);
-            } catch (e) {
-              Log.e(TAG, 'stopBackgroundRunning after dispose err: ' + JSON.stringify(e));
-            }
-            return;
-          }
-          this.isForeground = true;
-          Log.i(TAG, 'Operation startBackgroundRunning succeeded');
-          result.success(1);
-        }).catch((err: BusinessError) => {
-          Log.e(TAG, 'Operation startBackgroundRunning failed Cause: ' + JSON.stringify(err));
-          result.error('BACKGROUND_MODE_ERROR',
-            'Failed to start background running: ' + err.message, null);
-        });
-      }).catch((err: BusinessError) => {
-        Log.e(TAG, 'getWantAgent failed: ' + JSON.stringify(err));
-        result.error('WANT_AGENT_ERROR',
-          'Failed to create WantAgent: ' + err.message, null);
-      });
-    } else {
-      this.requestBackgroundPermission(result);
-    }
+    // OHOS LOCATION_IN_BACKGROUND is granted manually in Settings and cannot be
+    // reliably obtained via requestPermissionsFromUser. Match the pre-refactor
+    // behavior: start the location background task directly when foreground
+    // location permission is already granted (checked by MethodCallHandler).
+    this.startBackgroundRunningTask(result);
     } catch (err) {
       Log.e(TAG, 'enableBackgroundMode sync err: ' + JSON.stringify(err));
       result.error('BACKGROUND_MODE_ERROR',
         'Failed to enable background mode: ' + JSON.stringify(err), null);
     }
+  }
+
+  /**
+   * Start the OHOS location background long-running task.
+   */
+  private startBackgroundRunningTask(result: MethodResult): void {
+    let wantAgentInfo: wantAgent.WantAgentInfo = {
+      wants: [
+        {
+          bundleName: this.ability!.context.abilityInfo.bundleName,
+          abilityName: this.ability!.context.abilityInfo.name
+        }
+      ],
+      operationType: wantAgent.OperationType.START_ABILITY,
+      requestCode: 0,
+      wantAgentFlags: [wantAgent.WantAgentFlags.UPDATE_PRESENT_FLAG]
+    };
+    wantAgent.getWantAgent(wantAgentInfo).then((wantAgentObj: WantAgent) => {
+      if (this.isDisposed) {
+        result.error('PLUGIN_DISPOSED', 'Plugin has been disposed', null);
+        return;
+      }
+      backgroundTaskManager.startBackgroundRunning(this.ability?.context,
+        backgroundTaskManager.BackgroundMode.LOCATION, wantAgentObj).then(() => {
+        if (this.isDisposed) {
+          try {
+            backgroundTaskManager.stopBackgroundRunning(this.ability?.context);
+          } catch (e) {
+            Log.e(TAG, 'stopBackgroundRunning after dispose err: ' + JSON.stringify(e));
+          }
+          return;
+        }
+        this.isForeground = true;
+        Log.i(TAG, 'Operation startBackgroundRunning succeeded');
+        result.success(1);
+      }).catch((err: BusinessError) => {
+        Log.e(TAG, 'Operation startBackgroundRunning failed Cause: ' + JSON.stringify(err));
+        // Fallback: try requesting background permission (Settings grant on some devices)
+        if (!this.checkBackgroundPermissions()) {
+          this.requestBackgroundPermission(result);
+        } else {
+          result.error('BACKGROUND_MODE_ERROR',
+            'Failed to start background running: ' + err.message, null);
+        }
+      });
+    }).catch((err: BusinessError) => {
+      Log.e(TAG, 'getWantAgent failed: ' + JSON.stringify(err));
+      result.error('WANT_AGENT_ERROR',
+        'Failed to create WantAgent: ' + err.message, null);
+    });
   }
 
   /**
@@ -614,9 +642,10 @@ export class FlutterLocation {
         }
       }).catch((err: BusinessError) => {
         Log.e(TAG, 'Operation stopBackgroundRunning failed Cause: ' + JSON.stringify(err));
+        // If no background task is running, treat disable as success (matching Android)
+        this.isForeground = false;
         if (result) {
-          result.error('BACKGROUND_MODE_ERROR',
-            'Failed to stop background running: ' + err.message, null);
+          result.success(0);
         }
       });
     } catch (err) {
@@ -717,6 +746,31 @@ export class FlutterLocation {
     this._getLocationResult = null;
     this.ability = null;
     this.tokenId = null;
+  }
+
+  /**
+   * Build a location payload map for Flutter.
+   * Uses Map<string, number> to match EventChannel/MethodChannel encoding expectations.
+   * Only includes latitude/longitude/accuracy to avoid integer fields (e.g. time)
+   * breaking Dart-side LocationData.fromMap double casts.
+   */
+  private buildLocationMap(location: geoLocationManager.Location): Map<string, number> {
+    let loc: Map<string, number> = new Map<string, number>();
+    loc.set('latitude', location.latitude);
+    loc.set('longitude', location.longitude);
+    loc.set('accuracy', location.accuracy);
+    return loc;
+  }
+
+  /**
+   * Build a one-shot location request for getCurrentLocation().
+   */
+  private buildCurrentLocationRequest(): geoLocationManager.CurrentLocationRequest {
+    return {
+      'priority': this.requestInfo.priority,
+      'scenario': this.requestInfo.scenario,
+      'maxAccuracy': this.requestInfo.maxAccuracy
+    };
   }
 
   /**

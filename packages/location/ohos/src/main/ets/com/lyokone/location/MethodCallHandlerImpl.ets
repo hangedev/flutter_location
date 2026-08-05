@@ -266,7 +266,10 @@ export default class MethodCallHandlerImpl implements MethodCallHandler {
         if (this.location.checkPermissions()) {
           this.location.enableBackgroundMode(result);
         } else {
-          result.error('PERMISSION_DENIED', 'Location permission denied', null);
+          // Match Android: request foreground location permission first
+          this.location.setPendingEnableBackgroundMode(true);
+          this.location.result = result;
+          this.location.requestPermissions();
         }
       } else {
         result.error('INVALID_ARGUMENT',
