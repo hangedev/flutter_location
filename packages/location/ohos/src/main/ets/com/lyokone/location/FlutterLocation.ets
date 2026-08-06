@@ -575,6 +575,9 @@ export class FlutterLocation {
    * Start the OHOS location background long-running task.
    */
   private startBackgroundRunningTask(result: MethodResult): void {
+    // Use actionType/actionFlags (API 11+) instead of deprecated operationType/
+    // wantAgentFlags. Numeric START_ABILITY (1) avoids OperationType enum mismatch
+    // when compatibleSdk and targetSdk resolve different SDK snapshots.
     let wantAgentInfo: wantAgent.WantAgentInfo = {
       wants: [
         {
@@ -582,9 +585,9 @@ export class FlutterLocation {
           abilityName: this.ability!.context.abilityInfo.name
         }
       ],
-      operationType: wantAgent.OperationType.START_ABILITY,
+      actionType: 1,
       requestCode: 0,
-      wantAgentFlags: [wantAgent.WantAgentFlags.UPDATE_PRESENT_FLAG]
+      actionFlags: [wantAgent.WantAgentFlags.UPDATE_PRESENT_FLAG]
     };
     wantAgent.getWantAgent(wantAgentInfo).then((wantAgentObj: WantAgent) => {
       if (this.isDisposed) {
