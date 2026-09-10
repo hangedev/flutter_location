@@ -2,7 +2,7 @@
   <h1 align="center"> <code>location</code> </h1>
 </p>
 
-This project provides OpenHarmony/ohos platform support for [location@5.0.3](https://pub.dev/packages/location/versions/5.0.3) and [location@7.0.1](https://pub.dev/packages/location/versions/7.0.1).
+This project provides OpenHarmony/ohos platform support for [location@5.0.3](https://pub.dev/packages/location/versions/5.0.3), [location@7.0.1](https://pub.dev/packages/location/versions/7.0.1), and [location@8.0.1](https://pub.dev/packages/location/versions/8.0.1).
 
 ## 1. Installation and Usage
 
@@ -36,8 +36,10 @@ flutter pub get
 |---|---|---|
 | 3.7 | 5.0.3-ohos-1.0.0-beta.1 | master |
 | 3.22 | 7.0.1-ohos.1.0.1 | br_location-v7.0.1_ohos |
-| 3.27 | 7.0.1-ohos.1.0.1 | br_location-v7.0.1_ohos |
-| 3.35 | 7.0.1-ohos.1.0.1 | br_location-v7.0.1_ohos |
+| 3.27 | 8.0.1-ohos-1.0.0 | br_3.41                 |
+| 3.35 | 8.0.1-ohos-1.0.0 | br_3.41                 |
+| 3.41 | 8.0.1-ohos-1.0.0 | br_3.41                 |
+| 3.44 | 8.0.1-ohos-1.0.0 | br_3.41                 |
 
 > **Migration Note**: When upgrading from location@5.0.3 to location@7.0.1, note that `LocationScenario` enum and `distanceInterval` parameter have been added. Existing code without these parameters will continue to work with default values.
 
@@ -86,25 +88,18 @@ location.onLocationChanged.listen((LocationData currentLocation) {
 });
 ```
 
-#### OHOS-Specific Features Example
+#### Background Location Example
 
 ```dart
 import 'package:location/location.dart';
 
 final location = Location();
 
-// Use OHOS-specific LocationScenario for automatic optimization
+// Adjust location accuracy and update interval (Dart public API, consistent across platforms)
 await location.changeSettings(
-  accuracy: LocationAccuracy.high,
-  scenario: LocationScenario.navigation,  // OHOS-specific: navigation scenario
+  accuracy: LocationAccuracy.balanced,
   interval: 1000,
-  distanceInterval: 10.0,  // OHOS-specific: distance interval in meters
-);
-
-// Use OHOS-specific LocationAccuracy values
-await location.changeSettings(
-  accuracy: LocationAccuracy.balanced,  // Maps to LOW_POWER on OHOS
-  scenario: LocationScenario.trajectoryTracking,  // Trajectory tracking mode
+  distanceFilter: 10.0,
 );
 
 // Check and enable background mode
@@ -134,10 +129,10 @@ To build and run on OpenHarmony/ohos platform:
 
 This document is verified based on the following versions:
 
-| Library version | Flutter (OHOS) | SDK | DevEco Studio | ROM |
-|---|---|---|---|---|
-| location@7.0.1 | 3.27.5-ohos-1.0.1 | 5.0.0(12) | 6.0.1.260 | 6.0.0.120 SP6 |
-| location@7.0.1 | 3.35.7-ohos-0.0.1 | 6.0.1(21) | 6.0.1.260 | 6.0.0.120 SP6 |
+1. Flutter: 3.27.5-ohos-1.0.6;  SDK: 5.0.5(17); IDE: DevEco Studio: 6.1.1.290; ROM: 6.1.0.135.SP8;
+2. Flutter: 3.35.8-ohos-0.0.1;  SDK: 5.0.5(17); IDE: DevEco Studio: 6.1.1.290; ROM: 6.1.0.135.SP8;
+3. Flutter: 3.41.10-ohos-0.0.1; SDK: 5.0.5(17); IDE: DevEco Studio: 6.1.1.290; ROM: 6.1.0.135.SP8;
+4. Flutter: 3.44.9+ohos-0.0.1-canary1; SDK: 5.0.5(17); IDE: DevEco Studio: 6.1.1.290; ROM: 6.1.0.135.SP8;
 
 ## 3. API
 
@@ -147,7 +142,7 @@ This document is verified based on the following versions:
 
 | Name                | return          | Description                                                                                                             | Type     | ohos Support |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------|----------|-------------------|-------------------|
-| changeSettings({[LocationAccuracy](#LocationAccuracy)? accuracy = [LocationAccuracy](#LocationAccuracy).high,[LocationScenario](#LocationScenario)? scenario = [LocationScenario](#LocationScenario).unset,int? interval = 1000,double? distanceFilter = 0,double? distanceInterval = 0,})                                 | Future<bool> | Changes settings of the location request. | function | yes          |
+| changeSettings({[LocationAccuracy](#LocationAccuracy)? accuracy = [LocationAccuracy](#LocationAccuracy).high,[LocationScenario](#LocationScenario)? scenario = [LocationScenario](#LocationScenario).unset,int? interval = 1000,double? distanceFilter = 0,double? distanceInterval = 0,bool? pausesLocationUpdatesAutomatically = true})                                 | Future<bool> | Changes settings of the location request. `scenario` / `distanceInterval` are OHOS-specific. | function | yes          |
 | isBackgroundModeEnabled() | Future<bool>                                                  | Checks if service is enabled in the background mode. | function | yes          |
 | enableBackgroundMode({bool? enable = true})                                 | Future<bool> | Enables or disables service in the background mode. | function | yes          |
 | getLocation()                                 | Future<[LocationData](#LocationData)> | Gets the current location of the user. | function | yes          |
@@ -158,7 +153,7 @@ This document is verified based on the following versions:
 | onLocationChanged                                 | Stream<[LocationData](#LocationData)> | Stream of location changes. Subscribe to receive continuous location updates. | property | yes          |
 | changeNotificationOptions({...})                                 | Future<[AndroidNotificationData](#AndroidNotificationData)?> | Changes Android notification options for background mode. | function | no          |
 
-> **Note**: `requestService()` is marked as `partially` on OHOS because OpenHarmony does not provide a system API to pop up the location enable dialog. The method will return a `PlatformException` with code `SERVICE_NOT_SUPPORTED`. Users need to manually enable location in system Settings.
+> **Note**: `requestService()` is marked as `partially` on OHOS because OpenHarmony does not provide a system API to pop up the location enable dialog. When location service is disabled, the method returns `false` (`success(0)`). Users need to manually enable location in system Settings.
 
 ### Parameter
 
@@ -166,10 +161,10 @@ This document is verified based on the following versions:
 | --------------------------------- | ------------ | ------------------------------------------------------------ | -------- | ------------ |
 | interval |  | Control the time interval for location updates. | int | yes          |
 | distanceFilter |  | Control the distance threshold for location updates. Maps to `distanceInterval` on OHOS. | double | yes          |
-| distanceInterval |  | Control the distance interval for location updates (OHOS-specific). | double | yes          |
+| pausesLocationUpdatesAutomatically |  | Whether the OS may pause location updates in background (iOS-only; ignored on OHOS/Android). | bool | yes          |
 | enable |  | Control whether to enable the background mode service. | bool | yes          |
 | [LocationAccuracy](#LocationAccuracy) |  | Precision of the Location. A lower precision will provide a greater battery life. | enum | yes          |
-| [LocationScenario](#LocationScenario) |  | Define location scenario modes in ohos for automatic strategy optimization. | enum | yes          |
+| [LocationScenario](#LocationScenario) |  | OHOS location scenario mode. | enum | yes          |
 | [LocationData](#LocationData) |  | Represents a geographical location in the real world. | class | yes          |
 | [PermissionStatus](#PermissionStatus) |  | Status of a permission request to use location services. | enum | yes          |
 
@@ -177,24 +172,30 @@ This document is verified based on the following versions:
 
 | Name                              | return       | Description                                                  | Type     | ohos Support |
 | --------------------------------- | ------------ | ------------------------------------------------------------ | -------- | ------------ |
-| powerSave |  | Request best accuracy with zero additional power. On OHOS, equivalent to FIRST_FIX. | enum | yes          |
+| powerSave |  | Request best accuracy with zero additional power. On OHOS, equivalent to LOW_POWER. | enum | yes          |
 | low |  | Request "city" level accuracy. On OHOS, equivalent to LOW_POWER. | enum | yes          |
 | balanced |  | Request "block" level accuracy. On OHOS, equivalent to LOW_POWER. | enum | yes          |
 | high |  | Request the most accurate locations. On OHOS, equivalent to ACCURACY. | enum | yes          |
 | navigation |  | Request location for navigation usage (affects only iOS). | enum | yes          |
 | reduced |  | On iOS 14.0+, mapped to kCLLocationAccuracyReduced. On OHOS, equivalent to LOW_POWER. | enum | yes          |
-| unset |  | On OHOS, equivalent to UNSET (affects only OHOS). | enum | yes          |
 
 ### LocationScenario
 
-| Name                              | return       | Description                                                  | Type     | ohos Support |
-| --------------------------------- | ------------ | ------------------------------------------------------------ | -------- | ------------ |
-| unset |  | Request location for default scene (affects only OHOS). | enum | yes          |
-| navigation |  | Request location for NAVIGATION scene (affects only OHOS). | enum | yes          |
-| trajectoryTracking |  | Request location for TRAJECTORY_TRACKING scene (affects only OHOS). | enum | yes          |
-| carHailing |  | Request location for CAR_HAILING scene (affects only OHOS). | enum | yes          |
-| dailyLifeService |  | Request location for DAILY_LIFE_SERVICE scene (affects only OHOS). | enum | yes          |
-| noPower |  | Request location for NO_POWER scene (affects only OHOS). | enum | yes          |
+| Name | return | Description | Type | ohos Support |
+| --- | --- | --- | --- | --- |
+| unset |  | Default scenario (not specified). | enum | yes |
+| navigation |  | Navigation scenario. | enum | yes |
+| trajectoryTracking |  | Trajectory tracking scenario. | enum | yes |
+| carHailing |  | Ride-hailing scenario. | enum | yes |
+| dailyLifeService |  | Daily life service scenario. | enum | yes |
+| noPower |  | No-power priority scenario. | enum | yes |
+
+### AndroidNotificationData
+
+| Name | return | Description | Type | ohos Support |
+| --- | --- | --- | --- | --- |
+| channelId |  | Android notification channel ID. | String | no |
+| notificationId |  | Android notification ID. | int | no |
 
 ### LocationData
 
@@ -271,15 +272,14 @@ subscription.cancel();
 
 ## 5. Known Issues
 
-- **requestService()**: On OHOS platform, this method returns a `PlatformException` with code `SERVICE_STATUS_DISABLED` because OpenHarmony does not provide a system API to pop up the location enable dialog. Users need to manually enable location in system Settings.
-- **LocationData fields**: Some fields (`verticalAccuracy`, `speedAccuracy`, `isMock`, `headingAccuracy`, `elapsedRealtimeNanos`, `elapsedRealtimeUncertaintyNanos`, `satelliteNumber`, `provider`) are not available in the OHOS `geoLocationManager.Location` API and will return `null`.
+- **requestService()**: On OHOS platform, when location service is disabled, this method returns `false` because OpenHarmony does not provide a system API to pop up the location enable dialog. Users need to manually enable location in system Settings.
+- **LocationData fields**: OHOS supports `latitude`, `longitude`, `accuracy`, `altitude`, `speed`, `heading`, and `time`. Fields such as `verticalAccuracy`, `speedAccuracy`, `isMock`, `headingAccuracy`, `elapsedRealtimeNanos`, `elapsedRealtimeUncertaintyNanos`, `satelliteNumber`, and `provider` are not available in the OHOS API and will return `null`.
 - **PermissionStatus.deniedForever**: OHOS platform cannot distinguish between "denied" (user can still request again) and "deniedForever" (user checked "never ask again"). On OHOS, `requestPermission()` always returns `denied`(0) instead of `deniedForever`(2) because the system lacks a `shouldShowRequestPermissionRationale` equivalent API.
 
 ## 6. Others
 
 - **Upstream repository**: [location on pub.dev](https://pub.dev/packages/location)
 - **Issue tracker**: [GitHub Issues](https://github.com/Lyokone/flutterlocation/issues)
-- **OpenHarmony/ohos documentation**: [ohos Location Kit]
 
 ## 7. License
 

@@ -67,8 +67,8 @@ export default class StreamHandlerImpl implements StreamHandler {
   onListen(args: ESObject, events: EventSink): void {
     Log.i(TAG, 'onListen');
     try {
-      if (this.location == null || this.location.ability == null) {
-        events.error('NOACTIVITY',
+      if (this.location == null || this.location.getAbilityContext() == null) {
+        events.error('NO_CONTEXT',
           'Location plugin not initialized or ability context is not available', null);
         return;
       }

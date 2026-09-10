@@ -25,7 +25,7 @@ class LocationData {
     return LocationData._(
       dataMap['latitude'] as double?,
       dataMap['longitude'] as double?,
-      (dataMap['accuracy'] as num?)?.toDouble(),
+      dataMap['accuracy'] as double?,
       dataMap['altitude'] as double?,
       dataMap['speed'] as double?,
       dataMap['speed_accuracy'] as double?,
@@ -150,18 +150,15 @@ class LocationData {
 /// https://developer.apple.com/documentation/corelocation/cllocationaccuracy?language=objc
 enum LocationAccuracy {
   /// To request best accuracy possible with zero additional power consumption
-  /// On Ohos, this is equivalent to FIRST_FIX.
   powerSave,
 
   /// To request "city" level accuracy
-  /// On Ohos, this is equivalent to LOW_POWER.
   low,
 
   /// To request "block" level accuracy
   balanced,
 
   /// To request the most accurate locations available
-  /// On Ohos, this is equivalent to ACCURACY.
   high,
 
   /// To request location for navigation usage (affect only iOS)
@@ -172,7 +169,7 @@ enum LocationAccuracy {
   ///
   /// On iOS < 14.0 and Android, this is equivalent to LocationAccuracy.low.
   reduced,
-
+   
   /// On Ohos, this is equivalent to UNSET. (affect only Ohos)
   unset
 }

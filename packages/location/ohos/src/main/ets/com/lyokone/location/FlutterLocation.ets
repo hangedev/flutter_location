@@ -21,6 +21,7 @@ import geoLocationManager from '@ohos.geoLocationManager';
 import abilityAccessCtrl, { Permissions } from '@ohos.abilityAccessCtrl';
 import bundleManager from '@ohos.bundle.bundleManager';
 import UIAbility from '@ohos.app.ability.UIAbility';
+import common from '@ohos.app.ability.common';
 import backgroundTaskManager from '@ohos.resourceschedule.backgroundTaskManager';
 import wantAgent, { WantAgent } from '@ohos.app.ability.wantAgent';
 
@@ -34,6 +35,8 @@ const TAG = 'FlutterLocation';
 export class FlutterLocation {
   /** UIAbility instance for context access */
   ability: UIAbility | null = null;
+  /** Cached ability context survives brief onDetachedFromAbility during permission dialog */
+  private abilityContext: common.UIAbilityContext | null = null;
   /** EventSink for streaming location updates to Flutter */
   events: EventSink | null = null;
   /** MethodResult for one-shot permission request responses */
@@ -76,11 +79,11 @@ export class FlutterLocation {
   private isSubscribed: boolean = false;
   /** Whether enableBackgroundMode should run after foreground permission is granted */
   private pendingEnableBackgroundMode: boolean = false;
-  /** Location request configuration */
+  /** Location request configuration (defaults aligned with Android: 5s interval, high accuracy) */
   private requestInfo: geoLocationManager.LocationRequest = {
-    'priority': geoLocationManager.LocationRequestPriority.FIRST_FIX,
+    'priority': geoLocationManager.LocationRequestPriority.ACCURACY,
     'scenario': geoLocationManager.LocationRequestScenario.UNSET,
-    'timeInterval': 0,
+    'timeInterval': 5,
     'distanceInterval': 0,
     'maxAccuracy': 0
   };
@@ -101,7 +104,7 @@ export class FlutterLocation {
       return;
     }
     try {
-    const loc = this.buildLocationMap(location);
+    const loc: Record<string, number> = this.buildLocationMap(location);
     if (this.getLocationResult != null) {
       this.getLocationResult.success(loc);
       this.getLocationResult = null;
@@ -164,6 +167,27 @@ export class FlutterLocation {
    */
   setAbility(ability: UIAbility | null): void {
     this.ability = ability;
+    this.abilityContext = ability != null ? ability.context : this.abilityContext;
+  }
+
+  /**
+   * Get the UIAbility context, using a cached value when ability is temporarily detached.
+   */
+  getAbilityContext(): common.UIAbilityContext | null {
+    if (this.ability != null) {
+      return this.ability.context;
+    }
+    return this.abilityContext;
+  }
+
+  /**
+   * Detach from Ability without destroying the plugin instance.
+   * Called when the system temporarily detaches during permission dialogs.
+   */
+  detachFromAbility(): void {
+    Log.i(TAG, 'detachFromAbility');
+    this.stopLocationSubscription();
+    this.ability = null;
   }
 
   /**
@@ -239,7 +263,20 @@ export class FlutterLocation {
   requestPermissions(): void {
     Log.i(TAG, 'requestPermissions');
     try {
-    if (!this.ability || !(this.result || this.getLocationResult || this.events != null)) {
+    const context = this.getAbilityContext();
+    if (!context) {
+      const errMsg = 'Ability context is not available';
+      if (this.result != null) {
+        this.result.error('NO_CONTEXT', errMsg, null);
+        this.result = null;
+      }
+      if (this.getLocationResult != null) {
+        this.getLocationResult.error('NO_CONTEXT', errMsg, null);
+        this.getLocationResult = null;
+      }
+      return;
+    }
+    if (!(this.result || this.getLocationResult || this.events != null)) {
       return;
     }
     if (this.checkPermissions()) {
@@ -268,7 +305,7 @@ export class FlutterLocation {
     // of the one that initiated this request.
     const pendingResult = this.result;
     this.result = null;
-    this.atManager.requestPermissionsFromUser(this.ability.context, array).then((data) => {
+    this.atManager.requestPermissionsFromUser(context, array).then((data) => {
       if (this.isDisposed) {
         // Complete pending results to avoid Flutter hang
         if (pendingResult != null) {
@@ -355,6 +392,7 @@ export class FlutterLocation {
     if (this.events != null) {
       this.events?.error(errorCode, errorMessage, errorDetails as ESObject);
       this.events = null;
+      this.stopLocationSubscription();
     }
     // Do NOT clear this.result here — it is managed by the calling method.
     // Android's sendError also does not clear the result reference.
@@ -395,6 +433,7 @@ export class FlutterLocation {
       return;
     }
     // OHOS platform limitation: no system API to pop up location enable dialog.
+    // Return false (success(0)) to match Android/iOS Future<bool> contract.
     Log.i(TAG, 'requestService: service not enabled and cannot prompt on OHOS platform.');
     result.error('SERVICE_STATUS_DISABLED',
       'requestService is not supported on OpenHarmony - please enable location in Settings manually',
@@ -403,34 +442,29 @@ export class FlutterLocation {
 
   /**
    * Change location request settings.
+   * Aligned with Android 8.0.1: accuracy index, interval (ms), distanceFilter (m).
    * @param accuracy - Location accuracy enum index
    * @param interval - Update interval in milliseconds
-   * @param distanceFilter - Minimum distance for updates (meters), maps to distanceInterval
-   * @param distanceInterval - OHOS-specific distance interval parameter
-   * @param scenario - Location scenario enum index
+   * @param distanceFilter - Minimum distance for updates (meters)
    */
-  changeSettings(accuracy: number, interval: number, distanceFilter: number,
-    distanceInterval: number, scenario: number): void {
+  changeSettings(accuracy: number, interval: number, distanceFilter: number): void {
     Log.i(TAG, 'changeSettings');
     try {
-    // Parameter boundary validation
     if (interval < 0) {
       interval = 0;
     }
-    if (distanceFilter != null && distanceFilter < 0) {
+    if (distanceFilter < 0) {
       distanceFilter = 0;
     }
-    if (distanceInterval != null && distanceInterval < 0) {
-      distanceInterval = 0;
-    }
     this.requestInfo.timeInterval = interval / 1000;
-    // distanceFilter controls minimum displacement distance (meters),
-    // should map to distanceInterval (not maxAccuracy) for cross-platform consistency
-    this.requestInfo.distanceInterval =
-      distanceFilter > 0 ? distanceFilter : distanceInterval;
+    this.requestInfo.distanceInterval = distanceFilter;
     this.requestInfo.maxAccuracy = 0;
     this.requestInfo.priority = this.getLocationPriority(accuracy);
-    this.requestInfo.scenario = this.getLocationScenario(scenario);
+    // scenario remains UNSET unless set elsewhere (matching Android — no scenario param)
+    // Only (re)start requesting when a stream is active — changeSettings must not spawn
+    // a stream on its own. If permission was revoked while streaming, re-request it
+    // instead of erroring the active stream out (startRequestingLocation would
+    // sendError('PERMISSION_DENIED') and terminate it — a changeSettings regression).
     if (this.events != null) {
       if (this.checkPermissions()) {
         this.startRequestingLocation();
@@ -440,8 +474,6 @@ export class FlutterLocation {
     }
     } catch (err) {
       Log.e(TAG, 'changeSettings err: ' + JSON.stringify(err));
-      // Re-throw so the caller (onChangeSettings) can propagate the error
-      // to Flutter via result.error() instead of returning a misleading success(1).
       throw new Error('changeSettings failed: ' + JSON.stringify(err));
     }
   }
@@ -457,6 +489,15 @@ export class FlutterLocation {
         this.getLocationResult.error('PLUGIN_DISPOSED', 'Plugin has been disposed', null);
         this.getLocationResult = null;
       }
+      return;
+    }
+    if (!this.checkPermissions()) {
+      this.sendError('PERMISSION_DENIED', 'Location permission denied', null);
+      return;
+    }
+    if (!this.checkServiceEnabled()) {
+      this.sendError('SERVICE_STATUS_DISABLED',
+        'Failed to get location. Location services disabled', null);
       return;
     }
     try {
@@ -477,9 +518,6 @@ export class FlutterLocation {
       Log.e(TAG, 'getCurrentLocation call err: ' + JSON.stringify(err));
       this.sendError('UNEXPECTED_ERROR',
         'Failed to call getCurrentLocation: ' + JSON.stringify(err), null);
-      return;
-    }
-    if (!this.checkPermissions()) {
       return;
     }
     if (this.events != null) {
@@ -575,14 +613,19 @@ export class FlutterLocation {
    * Start the OHOS location background long-running task.
    */
   private startBackgroundRunningTask(result: MethodResult): void {
+    if (this.ability == null) {
+      result.error('NO_ABILITY', 'Ability context is not available', null);
+      return;
+    }
+    const ability = this.ability;
     // Use actionType/actionFlags (API 11+) instead of deprecated operationType/
     // wantAgentFlags. Numeric START_ABILITY (1) avoids OperationType enum mismatch
     // when compatibleSdk and targetSdk resolve different SDK snapshots.
     let wantAgentInfo: wantAgent.WantAgentInfo = {
       wants: [
         {
-          bundleName: this.ability!.context.abilityInfo.bundleName,
-          abilityName: this.ability!.context.abilityInfo.name
+          bundleName: ability.context.abilityInfo.bundleName,
+          abilityName: ability.context.abilityInfo.name
         }
       ],
       actionType: 1,
@@ -687,12 +730,13 @@ export class FlutterLocation {
    */
   private requestBackgroundPermission(result: MethodResult): void {
     Log.i(TAG, 'requestBackgroundPermission');
-    if (this.ability == null) {
+    const context = this.getAbilityContext();
+    if (context == null) {
       result.error('NO_ABILITY', 'Ability context is not available', null);
       return;
     }
     let array: Permissions[] = ['ohos.permission.LOCATION_IN_BACKGROUND'];
-    this.atManager.requestPermissionsFromUser(this.ability.context, array).then((data) => {
+    this.atManager.requestPermissionsFromUser(context, array).then((data) => {
       if (this.isDisposed) {
         result.error('PLUGIN_DISPOSED', 'Plugin has been disposed', null);
         return;
@@ -723,6 +767,14 @@ export class FlutterLocation {
   dispose(): void {
     Log.i(TAG, 'dispose');
     this.isDisposed = true;
+    if (this._result != null) {
+      this._result.error('PLUGIN_DISPOSED', 'Plugin has been disposed', null);
+      this._result = null;
+    }
+    if (this._getLocationResult != null) {
+      this._getLocationResult.error('PLUGIN_DISPOSED', 'Plugin has been disposed', null);
+      this._getLocationResult = null;
+    }
     // 1. Stop location subscription
     this.stopLocationSubscription();
     // 2. Stop background mode. The context is captured into a local so the async
@@ -745,23 +797,56 @@ export class FlutterLocation {
     this.onCurrentLocationResolved = null;
     this.onCurrentLocationRejected = null;
     this.events = null;
-    this._result = null;
-    this._getLocationResult = null;
     this.ability = null;
+    this.abilityContext = null;
     this.tokenId = null;
   }
 
   /**
-   * Build a location payload map for Flutter.
-   * Uses Map<string, number> to match EventChannel/MethodChannel encoding expectations.
-   * Only includes latitude/longitude/accuracy to avoid integer fields (e.g. time)
-   * breaking Dart-side LocationData.fromMap double casts.
+   * Force StandardMessageCodec to encode as double (not int).
+   * Dart LocationData.fromMap uses strict `as double?` casts — cannot change lib.
    */
-  private buildLocationMap(location: geoLocationManager.Location): Map<string, number> {
-    let loc: Map<string, number> = new Map<string, number>();
-    loc.set('latitude', location.latitude);
-    loc.set('longitude', location.longitude);
-    loc.set('accuracy', location.accuracy);
+  private toChannelDouble(value: number): number {
+    if (!Number.isFinite(value)) {
+      return 0.000001;
+    }
+    if (Math.trunc(value) === value) {
+      return value + 0.000001;
+    }
+    return value;
+  }
+
+  /**
+   * Epoch milliseconds exceed IEEE-754 fraction precision; +0.000001 is a no-op.
+   * Add 0.5ms so the value must cross the channel as double.
+   */
+  private toChannelTimeMillis(value: number): number {
+    if (!Number.isFinite(value)) {
+      return 0.000001;
+    }
+    return value + 0.5;
+  }
+
+  /**
+   * Build a location payload for Flutter MethodChannel/EventChannel.
+   * Plain Record encodes reliably; ES Map may not cross the channel on OHOS.
+   */
+  private buildLocationMap(location: geoLocationManager.Location): Record<string, number> {
+    const loc: Record<string, number> = {};
+    loc['latitude'] = this.toChannelDouble(location.latitude);
+    loc['longitude'] = this.toChannelDouble(location.longitude);
+    loc['accuracy'] = this.toChannelDouble(
+      Number.isFinite(location.accuracy) ? location.accuracy : 0);
+    if (location.altitude != null && Number.isFinite(location.altitude)) {
+      loc['altitude'] = this.toChannelDouble(location.altitude);
+    }
+    if (location.speed != null && Number.isFinite(location.speed)) {
+      loc['speed'] = this.toChannelDouble(location.speed);
+    }
+    if (location.direction != null && Number.isFinite(location.direction)) {
+      loc['heading'] = this.toChannelDouble(location.direction);
+    }
+    loc['time'] = this.toChannelTimeMillis(Date.now());
     return loc;
   }
 
@@ -769,11 +854,12 @@ export class FlutterLocation {
    * Build a one-shot location request for getCurrentLocation().
    */
   private buildCurrentLocationRequest(): geoLocationManager.CurrentLocationRequest {
-    return {
-      'priority': this.requestInfo.priority,
-      'scenario': this.requestInfo.scenario,
-      'maxAccuracy': this.requestInfo.maxAccuracy
+    const request: geoLocationManager.CurrentLocationRequest = {
+      priority: this.requestInfo.priority,
+      scenario: this.requestInfo.scenario,
+      maxAccuracy: this.requestInfo.maxAccuracy
     };
+    return request;
   }
 
   /**
@@ -784,11 +870,14 @@ export class FlutterLocation {
   private getLocationPriority(value: number): geoLocationManager.LocationRequestPriority {
     switch (value) {
       case LocationPriority.powerSave:
-        return geoLocationManager.LocationRequestPriority.FIRST_FIX;
+        // Android PRIORITY_NO_POWER — lowest power on OHOS
+        return geoLocationManager.LocationRequestPriority.LOW_POWER;
       case LocationPriority.low:
-      case LocationPriority.balanced:
       case LocationPriority.reduced:
         return geoLocationManager.LocationRequestPriority.LOW_POWER;
+      case LocationPriority.balanced:
+        // Android PRIORITY_BALANCED_POWER_ACCURACY — use UNSET for system default
+        return geoLocationManager.LocationRequestPriority.UNSET;
       case LocationPriority.high:
       case LocationPriority.navigation:
         // navigation maps to high accuracy (matching Android PRIORITY_HIGH_ACCURACY)

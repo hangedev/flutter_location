@@ -3,7 +3,7 @@
 </p>
 
 
-本项目为 [location@5.0.3](https://pub.dev/packages/location/versions/5.0.3) 和 [location@7.0.1](https://pub.dev/packages/location/versions/7.0.1) 提供 OpenHarmony/ohos支持。
+本项目为 [location@5.0.3](https://pub.dev/packages/location/versions/5.0.3)、[location@7.0.1](https://pub.dev/packages/location/versions/7.0.1) 和 [location@8.0.1](https://pub.dev/packages/location/versions/8.0.1) 提供 OpenHarmony/ohos 支持。
 
 ## 1. 安装与使用
 
@@ -37,8 +37,10 @@ flutter pub get
 |---|---|---|
 | 3.7 | 5.0.3-ohos-1.0.0-beta.1 | master |
 | 3.22 | 7.0.1-ohos.1.0.1 | br_location-v7.0.1_ohos |
-| 3.27 | 7.0.1-ohos.1.0.1 | br_location-v7.0.1_ohos |
-| 3.35 | 7.0.1-ohos.1.0.1 | br_location-v7.0.1_ohos |
+| 3.27 | 8.0.1-ohos-1.0.0 | br_3.41                 |
+| 3.35 | 8.0.1-ohos-1.0.0 | br_3.41                 |
+| 3.41 | 8.0.1-ohos-1.0.0 | br_3.41                 |
+| 3.44 | 8.0.1-ohos-1.0.0 | br_3.41                 |
 
 > **迁移说明**：从 location@5.0.3 升级到 location@7.0.1 时，请注意新增了 `LocationScenario` 枚举和 `distanceInterval` 参数。不使用这些参数的已有代码将以默认值继续正常工作。
 
@@ -87,25 +89,18 @@ location.onLocationChanged.listen((LocationData currentLocation) {
 });
 ```
 
-#### OHOS 专属功能示例
+#### 后台定位示例
 
 ```dart
 import 'package:location/location.dart';
 
 final location = Location();
 
-// 使用 OHOS 专属的 LocationScenario 进行自动策略优化
+// 调整定位精度与更新间隔（Dart 公开 API，跨平台一致）
 await location.changeSettings(
-  accuracy: LocationAccuracy.high,
-  scenario: LocationScenario.navigation,  // OHOS 专属：导航场景
+  accuracy: LocationAccuracy.balanced,
   interval: 1000,
-  distanceInterval: 10.0,  // OHOS 专属：距离间隔（米）
-);
-
-// 使用 OHOS 专属精度值
-await location.changeSettings(
-  accuracy: LocationAccuracy.balanced,  // 在 OHOS 上映射为 LOW_POWER
-  scenario: LocationScenario.trajectoryTracking,  // 轨迹追踪模式
+  distanceFilter: 10.0,
 );
 
 // 检查并启用后台模式
@@ -133,12 +128,12 @@ if (!isBackgroundEnabled) {
 
 ### 2.1 兼容性
 
-在以下版本中已测试通过：
+在以下版本中已测试通过:
 
-| 三方库版本 | Flutter (OHOS) | SDK | DevEco Studio | ROM |
-|---|---|---|---|---|
-| location@7.0.1 | 3.27.5-ohos-1.0.1 | 5.0.0(12) | 6.0.1.260 | 6.0.0.120 SP6 |
-| location@7.0.1 | 3.35.7-ohos-0.0.1 | 6.0.1(21) | 6.0.1.260 | 6.0.0.120 SP6 |
+1. Flutter: 3.27.5-ohos-1.0.6;  SDK: 5.0.5(17); IDE: DevEco Studio: 6.1.1.290; ROM: 6.1.0.135.SP8;
+2. Flutter: 3.35.8-ohos-0.0.1;  SDK: 5.0.5(17); IDE: DevEco Studio: 6.1.1.290; ROM: 6.1.0.135.SP8;
+3. Flutter: 3.41.10-ohos-0.0.1; SDK: 5.0.5(17); IDE: DevEco Studio: 6.1.1.290; ROM: 6.1.0.135.SP8;
+4. Flutter: 3.44.9+ohos-0.0.1-canary1; SDK: 5.0.5(17); IDE: DevEco Studio: 6.1.1.290; ROM: 6.1.0.135.SP8;
 
 ## 3. API
 
@@ -148,7 +143,7 @@ if (!isBackgroundEnabled) {
 
 | 名称                | 返回值          | 描述                                                                                                             | 类型     | OHOS 支持 |
 |---------------------|-------------------------------------------------------------------------------------------------------------------------|----------|-------------------|-------------------|
-| changeSettings({[LocationAccuracy](#LocationAccuracy)? accuracy = [LocationAccuracy](#LocationAccuracy).high,[LocationScenario](#LocationScenario)? scenario = [LocationScenario](#LocationScenario).unset,int? interval = 1000,double? distanceFilter = 0,double? distanceInterval = 0,})                                 | Future<bool> | 修改位置请求的设置。 | function | yes          |
+| changeSettings({[LocationAccuracy](#LocationAccuracy)? accuracy = [LocationAccuracy](#LocationAccuracy).high,[LocationScenario](#LocationScenario)? scenario = [LocationScenario](#LocationScenario).unset,int? interval = 1000,double? distanceFilter = 0,double? distanceInterval = 0,bool? pausesLocationUpdatesAutomatically = true})                                 | Future<bool> | 修改位置请求的设置。`scenario` / `distanceInterval` 为 OHOS 专用。 | function | yes          |
 | isBackgroundModeEnabled() | Future<bool>                                                  | 检查服务是否在后台模式中启用。 | function | yes          |
 | enableBackgroundMode({bool? enable = true})                                 | Future<bool> | 启用或禁用后台模式中的服务。 | function | yes          |
 | getLocation()                                 | Future<[LocationData](#LocationData)> | 获取用户的当前位置。 | function | yes          |
@@ -159,18 +154,18 @@ if (!isBackgroundEnabled) {
 | onLocationChanged                                 | Stream<[LocationData](#LocationData)> | 位置变更事件流。订阅以接收持续的位置更新。 | property | yes          |
 | changeNotificationOptions({...})                                 | Future<[AndroidNotificationData](#AndroidNotificationData)?> | 修改后台模式的 Android 通知选项。 | function | no          |
 
-> **注意**：`requestService()` 在 OHOS 上标记为 `partially`，因为 OpenHarmony 不提供弹出启用定位对话框的系统 API。该方法将返回 `PlatformException`，错误码为 `SERVICE_NOT_SUPPORTED`。用户需手动前往系统设置启用定位。
+> **注意**：`requestService()` 在 OHOS 上标记为 `partially`，因为 OpenHarmony 不提供弹出启用定位对话框的系统 API。定位服务未开启时返回 `false`（`success(0)`），用户需手动前往系统设置启用定位。
 
 ### 参数
 
 | 名称                              | 返回值       | 描述                                                  | 类型     | OHOS 支持 |
 | --------------------------------- | ------------ | ------------------------------------------------------------ | -------- | ------------ |
-| interval |  | 控制位置更新的时间间隔。 | int | yes          |
+| interval |  | 控制位置更新的时间间隔。在 OHOS 上映射为 `timeInterval`（单位：秒），毫秒值按四舍五入换算并归一化为不小于 1 秒的整数。 | int | yes          |
 | distanceFilter |  | 控制位置更新的距离阈值。在 OHOS 上映射为 `distanceInterval`。 | double | yes          |
-| distanceInterval |  | 控制位置更新的距离间隔（OHOS 专属参数）。 | double | yes          |
+| pausesLocationUpdatesAutomatically |  | 是否允许系统在后台暂停位置更新（iOS 专用，OHOS/Android 忽略）。 | bool | yes          |
 | enable |  | 控制是否启用后台模式服务。 | bool | yes          |
 | [LocationAccuracy](#LocationAccuracy) |  | 定位的精度。较低的精度会提供更长的电池续航时间。 | enum | yes          |
-| [LocationScenario](#LocationScenario) |  | 用于在ohos操作系统中定义定位场景模式，允许系统根据不同场景自动优化定位策略。 | enum | yes          |
+| [LocationScenario](#LocationScenario) |  | OHOS 定位场景模式。 | enum | yes          |
 | [LocationData](#LocationData) |  | 表示现实世界中的一个地理位置。 | class | yes          |
 | [PermissionStatus](#PermissionStatus) |  | 使用定位服务的权限请求的状态。 | enum | yes          |
 
@@ -178,24 +173,30 @@ if (!isBackgroundEnabled) {
 
 | 名称                              | 返回值       | 描述                                                  | 类型     | OHOS 支持 |
 | --------------------------------- | ------------ | ------------------------------------------------------------ | -------- | ------------ |
-| powerSave |  | 请求尽可能高的精度，且不增加额外的功耗。在 OHOS 上等同于 FIRST_FIX 模式。 | enum | yes          |
+| powerSave |  | 请求尽可能高的精度，且不增加额外的功耗。在 OHOS 上等同于 LOW_POWER 模式。 | enum | yes          |
 | low |  | 请求"城市"级别的精度。在 OHOS 上等同于 LOW_POWER 模式。 | enum | yes          |
 | balanced |  | 请求"街区"级别的精度。在 OHOS 上等同于 LOW_POWER 模式。 | enum | yes          |
 | high |  | 请求最精确的定位信息。在 OHOS 上等同于 ACCURACY 模式。 | enum | yes          |
 | navigation |  | 请求用于导航的定位信息（仅影响 iOS）。 | enum | yes          |
 | reduced |  | 在 iOS 14.0 及以上版本中，对应 kCLLocationAccuracyReduced。在 OHOS 上等同于 LOW_POWER 模式。 | enum | yes          |
-| unset |  | 在 OHOS 上等同于 UNSET（仅影响 OHOS）。 | enum | yes          |
 
 ### LocationScenario
 
-| 名称                              | 返回值       | 描述                                                  | 类型     | OHOS 支持 |
-| --------------------------------- | ------------ | ------------------------------------------------------------ | -------- | ------------ |
-| unset |  | 请求用于默认场景的定位信息（仅影响 OHOS）。 | enum | yes          |
-| navigation |  | 请求用于导航场景的定位信息（仅影响 OHOS）。 | enum | yes          |
-| trajectoryTracking |  | 请求用于轨迹追踪场景的定位信息（仅影响 OHOS）。 | enum | yes          |
-| carHailing |  | 请求用于网约车场景的定位信息（仅影响 OHOS）。 | enum | yes          |
-| dailyLifeService |  | 请求用于日常生活服务场景的定位信息（仅影响 OHOS）。 | enum | yes          |
-| noPower |  | 请求用于无功耗场景的定位信息（仅影响 OHOS）。 | enum | yes          |
+| 名称 | 返回值 | 描述 | 类型 | OHOS 支持 |
+| --- | --- | --- | --- | --- |
+| unset |  | 默认场景（未指定）。 | enum | yes |
+| navigation |  | 导航场景。 | enum | yes |
+| trajectoryTracking |  | 轨迹跟踪场景。 | enum | yes |
+| carHailing |  | 网约车场景。 | enum | yes |
+| dailyLifeService |  | 日常生活服务场景。 | enum | yes |
+| noPower |  | 无功耗优先场景。 | enum | yes |
+
+### AndroidNotificationData
+
+| 名称 | 返回值 | 描述 | 类型 | OHOS 支持 |
+| --- | --- | --- | --- | --- |
+| channelId |  | Android 通知渠道 ID。 | String | no |
+| notificationId |  | Android 通知 ID。 | int | no |
 
 ### LocationData
 
@@ -272,15 +273,15 @@ subscription.cancel();
 
 ## 5. 遗留问题
 
-- **requestService()**：在 OHOS 平台上，该方法返回 `PlatformException`（错误码 `SERVICE_STATUS_DISABLED`），因为 OpenHarmony 不提供弹出启用定位对话框的系统 API。用户需手动前往系统设置启用定位。
-- **LocationData 字段**：部分字段（`verticalAccuracy`、`speedAccuracy`、`isMock`、`headingAccuracy`、`elapsedRealtimeNanos`、`elapsedRealtimeUncertaintyNanos`、`satelliteNumber`、`provider`）在 OHOS `geoLocationManager.Location` API 中不可用，将返回 `null`。
+- **requestService()**：在 OHOS 平台上，定位服务未开启时返回 `false`（无系统弹窗 API），用户需手动前往系统设置启用定位。
+- **interval 亚秒级间隔**：Dart API 的 `interval` 参数单位为毫秒，而 OHOS `geoLocationManager.LocationRequest` 的 `timeInterval` 单位为秒（整数）。插件按 `max(1, round(interval / 1000))` 秒换算，因此小于 500 ms 的间隔设置会被归一化为 1 秒，OHOS 平台不支持亚秒级的位置更新间隔。
+- **LocationData 字段**：OHOS 已支持 `latitude`、`longitude`、`accuracy`、`altitude`、`speed`、`heading`、`time`；`verticalAccuracy`、`speedAccuracy`、`isMock`、`headingAccuracy`、`elapsedRealtimeNanos`、`elapsedRealtimeUncertaintyNanos`、`satelliteNumber`、`provider` 在 OHOS API 中不可用，将返回 `null`。
 - **PermissionStatus.deniedForever**：OHOS 平台无法区分"denied"（用户仍可再次请求）和"deniedForever"（用户勾选了"不再询问"）。在 OHOS 上，`requestPermission()` 始终返回 `denied`(0) 而非 `deniedForever`(2)，因为系统缺少 `shouldShowRequestPermissionRationale` 等效 API。
 
 ## 6. 其余
 
 - **上游仓库**：[location on pub.dev](https://pub.dev/packages/location)
 - **问题追踪**：[GitHub Issues](https://github.com/Lyokone/flutterlocation/issues)
-- **OpenHarmony/ohos**：[ohos服务开发指导]
 
 ## 7. 开源协议
 

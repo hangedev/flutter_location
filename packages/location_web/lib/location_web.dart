@@ -1,5 +1,5 @@
-import 'dart:js_interop';
 import 'dart:async';
+import 'dart:js_interop';
 import 'dart:ui';
 
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
@@ -26,6 +26,7 @@ class LocationWebPlugin extends LocationPlatform {
     LocationAccuracy? accuracy,
     int? interval,
     double? distanceFilter,
+    bool? pausesLocationUpdatesAutomatically,
   }) async {
     _accuracy = accuracy;
     return true;
@@ -130,7 +131,7 @@ class LocationWebPlugin extends LocationPlatform {
     return null;
   }
 
-  /// Converts a [web.Geoposition] to a [LocationData].
+  /// Converts a [web.GeolocationPosition] to a [LocationData].
   ///
   /// This method is used to convert the result of the Geolocation API to a
   /// [LocationData] object.

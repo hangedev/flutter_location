@@ -1,3 +1,13 @@
+## 8.0.1
+
+- Bump dependency on `location_platform_interface` to `^6.0.1` (#933)
+
+## 8.0.0
+
+- Bump minimum Dart version to 3.4, minimum Flutter version to 3.22
+- Bump dependency on `package: location_web` to `^6.0.0`
+  - Remove dependency on `js` (#1007)
+
 ## 7.0.1
 
 - Bump dependency on `package: location_web` to `^5.0.4`

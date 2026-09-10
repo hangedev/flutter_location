@@ -1,13 +1,13 @@
 name: location
 description: Cross-platform plugin for easy access to device's location in real-time.
-version: 7.0.1
+version: 8.0.1
 homepage: https://docs.page/Lyokone/flutterlocation
 repository: https://github.com/Lyokone/flutterlocation
 issue_tracker: https://github.com/Lyokone/flutterlocation/issues
 
 environment:
-  sdk: ">=3.1.0 <4.0.0"
-  flutter: ">=3.16.0"
+  sdk: ">=3.6.0 <4.0.0"
+  flutter: ">=3.27.0"
 
 flutter:
   plugin:
@@ -28,14 +28,15 @@ flutter:
 dependencies:
   flutter:
     sdk: flutter
-  location_platform_interface: 
+  location_platform_interface:
     path: ../location_platform_interface
   location_web:
-      path: ../location_web
+    path: ../location_web
 dev_dependencies:
   async: ^2.11.0
-  build_runner: ^2.4.11
+  build_runner: ^2.4.14
+  coverage: ^1.9.2
   flutter_test:
     sdk: flutter
-  leancode_lint: ^13.0.0
-  mockito: ^5.4.4
+  leancode_lint: ^15.0.0
+  mockito: ^5.4.5

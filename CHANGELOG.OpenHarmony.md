@@ -1,5 +1,30 @@
 # CHANGELOG - OpenHarmony/ohos
 
+## 8.0.1-ohos-1.0.0 - 2026.9
+
+### Added
+
+- Sync with upstream [location](https://pub.dev/packages/location) **8.0.1** on branch `br_3.41` (Flutter **3.41/3.44** adaptation) ([#41](https://gitcode.com/CPF-Flutter/flutter_location/pull/41)).
+- Dart unit tests under `packages/location/test/` covering `MethodChannelLocation` mocks, `LocationData` / `AndroidNotificationData` field parsing, exception paths, and concurrency scenarios via `coverage_test.dart` ([#41](https://gitcode.com/CPF-Flutter/flutter_location/pull/41)).
+- `coverage` package in `dev_dependencies` for test coverage reporting ([#41](https://gitcode.com/CPF-Flutter/flutter_location/pull/41)).
+
+### Changed
+
+- OpenHarmony documentation updates in `README.OpenHarmony.md` / `README.OpenHarmony_CN.md`: version matrix for location 8.0.1 and Flutter 3.41/3.44, inline usage examples, `AndroidNotificationData` field notes, and migration guidance ([#41](https://gitcode.com/CPF-Flutter/flutter_location/pull/41)).
+- `changeSettings` Dart API aligned with upstream 8.x: restore `pausesLocationUpdatesAutomatically`; keep OHOS-only `scenario` / `distanceInterval` as optional parameters for 7.x API compatibility ([#41](https://gitcode.com/CPF-Flutter/flutter_location/pull/41)).
+- Dependencies switched from monorepo `path` to pub-hosted `location_platform_interface` ^6.0.0 and `location_web` ^6.0.0 ([#41](https://gitcode.com/CPF-Flutter/flutter_location/pull/41)).
+- Default OHOS location request configuration aligned with Android: 5s interval and `ACCURACY` priority ([#41](https://gitcode.com/CPF-Flutter/flutter_location/pull/41)).
+
+### Fixed
+
+- `buildLocationMap` now returns `altitude`, `speed`, `heading`, and `time` for cross-platform parity with Android/iOS; added `toChannelDouble` to avoid integer channel encoding breaking Dart `LocationData.fromMap` casts ([#41](https://gitcode.com/CPF-Flutter/flutter_location/pull/41)).
+- `requestService()` returns `false` (`success(0)`) when location service is disabled, matching the Dart `Future<bool>` contract instead of throwing `PlatformException` ([#41](https://gitcode.com/CPF-Flutter/flutter_location/pull/41)).
+- `getLocationPriority` mapping aligned with Android (`powerSave` → `LOW_POWER`, `balanced` → `UNSET`) ([#41](https://gitcode.com/CPF-Flutter/flutter_location/pull/41)).
+- `enableBackgroundMode(null)` returns `success(0)` matching Android boundary behavior ([#41](https://gitcode.com/CPF-Flutter/flutter_location/pull/41)).
+- Stream error code unified to `NO_CONTEXT` (matching Android) ([#41](https://gitcode.com/CPF-Flutter/flutter_location/pull/41)).
+- `sendError()` now stops location subscription immediately to prevent brief subscription retention ([#41](https://gitcode.com/CPF-Flutter/flutter_location/pull/41)).
+- Removed non-null assertion in `startBackgroundRunningTask()` with explicit `ability` null guard ([#41](https://gitcode.com/CPF-Flutter/flutter_location/pull/41)).
+
 ## 7.0.1-ohos.1.0.1
 
 - **Fixed**: `changeSettings()` now re-throws exceptions so `onChangeSettings` can propagate the error to Flutter via `result.error()` instead of returning a misleading success
