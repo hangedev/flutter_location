@@ -124,8 +124,9 @@ export default class MethodCallHandlerImpl implements MethodCallHandler {
   private onHasPermission(result: MethodResult): void {
     try {
       if (this.location?.checkPermissions()) {
-        const status = this.location.checkPermissionStatus();
-        result.success(status);
+        // Return explicit int codes for Dart _parsePermissionStatus (1 or 3 on OHOS).
+        const status: number = this.location.checkPermissionStatus();
+        result.success(status === 3 ? 3 : 1);
       } else {
         result.success(0);
       }
@@ -182,9 +183,8 @@ export default class MethodCallHandlerImpl implements MethodCallHandler {
         const accuracy: Object | null = call.argument('accuracy') as Object | null;
         const interval: Object | null = call.argument('interval') as Object | null;
         const distanceFilter: Object | null = call.argument('distanceFilter') as Object | null;
-        const distanceInterval: Object | null = call.argument('distanceInterval') as Object | null;
-        const scenario: Object | null = call.argument('scenario') as Object | null;
-        // Validate parameter types
+        // Match Android 8.0.1: accuracy, interval, distanceFilter only.
+        // pausesLocationUpdatesAutomatically is sent by Dart but ignored on native (same as Android).
         if (typeof accuracy !== 'number' || typeof interval !== 'number') {
           result.error('INVALID_ARGUMENT', 'accuracy and interval must be numbers', null);
           return;
@@ -193,20 +193,10 @@ export default class MethodCallHandlerImpl implements MethodCallHandler {
           result.error('INVALID_ARGUMENT', 'distanceFilter must be a number', null);
           return;
         }
-        if (distanceInterval != null && typeof distanceInterval !== 'number') {
-          result.error('INVALID_ARGUMENT', 'distanceInterval must be a number', null);
-          return;
-        }
-        if (scenario != null && typeof scenario !== 'number') {
-          result.error('INVALID_ARGUMENT', 'scenario must be a number', null);
-          return;
-        }
         this.location.changeSettings(
           accuracy as number,
           interval as number,
-          (distanceFilter ?? 0) as number,
-          (distanceInterval ?? 0) as number,
-          (scenario ?? 0) as number
+          (distanceFilter ?? 0) as number
         );
         result.success(1);
       } catch (err) {
@@ -256,8 +246,14 @@ export default class MethodCallHandlerImpl implements MethodCallHandler {
    */
   enableBackgroundMode(call: MethodCall, result: MethodResult): void {
     try {
-      let enable: boolean = call.argument('enable');
-      if (this.location != null && enable != null && typeof enable === 'boolean') {
+      const enableArg: Object | null = call.argument('enable') as Object | null;
+      if (enableArg == null) {
+        // Match Android: null enable returns success(0)
+        result.success(0);
+        return;
+      }
+      if (this.location != null && typeof enableArg === 'boolean') {
+        const enable: boolean = enableArg as boolean;
         if (!enable) {
           // Disable does not require permission check (matching Android behavior)
           this.location.disableBackgroundMode(result);

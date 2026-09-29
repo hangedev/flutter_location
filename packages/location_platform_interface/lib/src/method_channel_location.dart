@@ -35,8 +35,11 @@ class MethodChannelLocation extends LocationPlatform {
   ///
   /// The [accuracy] argument is controlling the precision of the
   /// [LocationData]. The [interval] and [distanceFilter] are controlling how
-  /// often a new location is sent through [onLocationChanged].
-  /// [scenario] and  [distanceInterval] are only used on ohos.
+  /// often a new location is sent through [onLocationChanged]. The
+  /// [pausesLocationUpdatesAutomatically] argument indicates whether the
+  /// underlying location manager object may pause location updates.
+  ///
+  /// [scenario] and [distanceInterval] are only used on ohos.
   @override
   Future<bool> changeSettings({
     LocationAccuracy? accuracy = LocationAccuracy.high,
@@ -44,6 +47,7 @@ class MethodChannelLocation extends LocationPlatform {
     int? interval = 1000,
     double? distanceFilter = 0,
     double? distanceInterval = 0,
+    bool? pausesLocationUpdatesAutomatically = true,
   }) async {
     final result = await _methodChannel!.invokeMethod(
       'changeSettings',
@@ -53,6 +57,8 @@ class MethodChannelLocation extends LocationPlatform {
         'interval': interval,
         'distanceFilter': distanceFilter,
         'distanceInterval': distanceInterval,
+        'pausesLocationUpdatesAutomatically':
+            pausesLocationUpdatesAutomatically,
       },
     );
 
@@ -210,6 +216,8 @@ class MethodChannelLocation extends LocationPlatform {
     }
 
     if (color != null) {
+      // Not sure what to replace this with.
+      // ignore: deprecated_member_use
       data['color'] = '#${color.value.toRadixString(16)}';
     }
 

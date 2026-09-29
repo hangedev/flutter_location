@@ -38,14 +38,18 @@ class LocationPlatform extends PlatformInterface {
   ///
   /// The [accuracy] argument is controlling the precision of the
   /// [LocationData]. The [interval] and [distanceFilter] are controlling how
-  /// often a new location is sent through [onLocationChanged].
-  /// [scenario] and  [distanceInterval] are only used on ohos.
+  /// often a new location is sent through [onLocationChanged]. The
+  /// [pausesLocationUpdatesAutomatically] argument indicates whether the
+  /// underlying location manager object may pause location updates.
+  ///
+  /// [scenario] and [distanceInterval] are only used on ohos.
   Future<bool> changeSettings({
     LocationAccuracy? accuracy,
     LocationScenario? scenario,
     int? interval,
     double? distanceFilter,
     double? distanceInterval,
+    bool? pausesLocationUpdatesAutomatically,
   }) {
     throw UnimplementedError();
   }
